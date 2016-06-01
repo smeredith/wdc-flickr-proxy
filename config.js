@@ -6,6 +6,5 @@ module.exports = {
  'PORT': 3333,
  'CLIENT_ID': 'YOUR_CLIENT_ID',
  'CLIENT_SECRET': 'YOUR_CLIENT_SECRET',
- 'REDIRECT_PATH': '/redirect'
 };
 
