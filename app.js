@@ -18,13 +18,13 @@ var clientId = config.CLIENT_ID;
 var clientSecret = config.CLIENT_SECRET;
 var redirectURI = config.HOSTPATH + ":" + app.get('port') + "/redirect";
 
-app.get('/b', function(req, res) {
+app.get('/redirect', function(req, res) {
+    console.log("in /redirect");
+});
 
-    function gotRequestToken() {
+app.get('/d', function(req, res) {
 
-    }
-
-    function getRequestToken() {
+    function getRequestToken(res) {
         console.log("in getRequestToken()");
 
         var auth = oauth({
@@ -39,7 +39,7 @@ app.get('/b', function(req, res) {
             url: 'https://www.flickr.com/services/oauth/request_token',
             method: 'GET',
             data: {
-                oauth_callback: 'http://localhost/flickr.html'
+                oauth_callback: redirectURI
             }
         };
 
@@ -52,8 +52,15 @@ app.get('/b', function(req, res) {
 
         request(options, function (error, response, body) {
             if (!error) {
-                console.log("getRequestToken() success");
-                gotRequestToken(body);
+                console.log("getRequestToken() success: " + body);
+                var params = querystring.parse(body);
+
+                // We'll need this later to sign requests.
+                res.cookie('oauth_token_secret', params.oauth_token_secret);
+
+                var redirectUrl = 'https://www.flickr.com/services/oauth/authorize?perms=read&oauth_token=' + params.oauth_token;
+                console.log(redirectUrl);
+                res.redirect(redirectUrl);
             } else {
                 console.log(error);
             }
@@ -63,7 +70,7 @@ app.get('/b', function(req, res) {
     if (req.accessToken) {
         //res.redirect('/index.html');
     } else {
-        getRequestToken();
+        getRequestToken(res);
     }
 });
 
