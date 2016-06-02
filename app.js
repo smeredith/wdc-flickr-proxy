@@ -19,10 +19,63 @@ var clientSecret = config.CLIENT_SECRET;
 var redirectURI = config.HOSTPATH + ":" + app.get('port') + "/redirect";
 
 app.get('/redirect', function(req, res) {
-    console.log("in /redirect");
-});
+    console.log("in /redirect: " + req.url);
 
-app.get('/d', function(req, res) {
+    // The request token comes as part of the redirect URL.
+    // Exchange the request token for an access token.
+    var oauth_token = req.query.oauth_token;
+    var oauth_verifier = req.query.oauth_verifier;
+
+    var auth = oauth({
+        consumer: {
+            public: clientId,
+            secret: clientSecret
+        },
+        signature_method: 'HMAC-SHA1'
+    });
+
+    var token = {
+        public: oauth_token,
+        secret: req.cookies.oauth_token_secret
+    };
+
+    console.log("token.public: " + token.public);
+    console.log("token.secret: " + token.secret);
+
+    var reqData = {
+        url: 'https://www.flickr.com/services/oauth/access_token',
+        method: 'GET',
+        data: {
+            oauth_verifier: oauth_verifier
+        }
+    };
+
+    var options = {
+        url: reqData.url,
+        method: reqData.method,
+        headers: auth.toHeader(auth.authorize(reqData, token))
+    };
+
+    request(options, function (error, response, body) {
+        if (!error) {
+            console.log("got access token: " + body);
+            var params = querystring.parse(body);
+
+            // This oauth_token is the access token. It is used to sign all
+            // future requests.
+            res.cookie('oauth_token', params.oauth_token);
+            res.cookie('oauth_token_secret', params.oauth_token_secret);
+
+            res.redirect("./flickr.html");
+        } else {
+            console.log(error);
+        }
+    });
+
+
+ });
+
+app.get('/e', function(req, res) {
 
     function getRequestToken(res) {
         console.log("in getRequestToken()");
@@ -46,7 +99,6 @@ app.get('/d', function(req, res) {
         var options = {
             url: reqData.url,
             method: reqData.method,
-            form: auth.authorize(reqData),
             headers: auth.toHeader(auth.authorize(reqData))
         };
 
@@ -67,7 +119,8 @@ app.get('/d', function(req, res) {
         });
     }
 
-    if (req.accessToken) {
+    if (req.cookies.oauth_token) {
+        console.log("has access token");
         //res.redirect('/index.html');
     } else {
         getRequestToken(res);
@@ -77,4 +130,5 @@ app.get('/d', function(req, res) {
 http.createServer(app).listen(app.get('port'), function(){
     console.log('Server listening on port ' + app.get('port'));
 });
+
 
