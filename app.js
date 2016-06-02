@@ -75,7 +75,7 @@ app.get('/redirect', function(req, res) {
 
  });
 
-app.get('/e', function(req, res) {
+app.get('/flickr.html', function(req, res) {
 
     function getRequestToken(res) {
         console.log("in getRequestToken()");
@@ -121,7 +121,7 @@ app.get('/e', function(req, res) {
 
     if (req.cookies.oauth_token) {
         console.log("has access token");
-        //res.redirect('/index.html');
+        res.redirect('/flickr.html');
     } else {
         getRequestToken(res);
     }
