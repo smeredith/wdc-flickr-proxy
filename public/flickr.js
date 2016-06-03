@@ -72,7 +72,7 @@
         return entry;
     };
 
-    // Get a set of image metadata from the server.
+    // Get a set of image metadata from the server via the WDC proxy.
     function getImageMetadata(lastPage) {
         var imageList = [];
 
@@ -196,16 +196,13 @@
         return imageList;
     }
 
-    //
-    // Tableau connector
-    //
-
     var myConnector = tableau.makeConnector();
 
     myConnector.getSchema = function (schemaCallback) {
         // Tell tableau about the fields and their types.
         // Return everything the Flickr API returns.
         // The id is close to the field as it comes from the Flickr API.
+        // The aliases are little better.
         var cols = [
         { id : "photoid", alias : "photo id", dataType : tableau.dataTypeEnum.string },
         { id : "tag", alias : "tag", dataType : tableau.dataTypeEnum.string },
@@ -215,59 +212,59 @@
         { id : "isfriend", alias : "is friend", dataType : tableau.dataTypeEnum.bool },
         { id : "isfamily", alias : "is family", dataType : tableau.dataTypeEnum.bool },
         { id : "datetaken", alias : "date taken", dataType : tableau.dataTypeEnum.datetime },
-        { id : "datetakengranularity", alias : "date taken granularity", dataType : tableau.dataTypeEnum.int },
+        { id : "datetakengranularity", alias : "date taken granularity", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         { id : "datetakenunknown", alias : "is date taken unknown", dataType : tableau.dataTypeEnum.bool },
         { id : "dateupload", alias : "date uploaded", dataType : tableau.dataTypeEnum.string },
-        { id : "license", alias : "license", dataType : tableau.dataTypeEnum.int },
+        { id : "license", alias : "license", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         { id : "lastupdate", alias : "last update", dataType : tableau.dataTypeEnum.string },
         { id : "latitude", alias : "latitude", dataType : tableau.dataTypeEnum.float },
         { id : "longitude", alias : "longitude", dataType : tableau.dataTypeEnum.float },
-        { id : "accuracy", alias : "accuracy", dataType : tableau.dataTypeEnum.int },
-        { id : "context", alias : "context", dataType : tableau.dataTypeEnum.int },
+        { id : "accuracy", alias : "accuracy", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
+        { id : "context", alias : "context", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         { id : "place_id", alias : "place id", dataType : tableau.dataTypeEnum.string },
         { id : "woeid", alias : "woe id", dataType : tableau.dataTypeEnum.string },
         { id : "geo_is_family", alias : "geo is family", dataType : tableau.dataTypeEnum.bool },
         { id : "geo_is_friend", alias : "geo is friend", dataType : tableau.dataTypeEnum.bool },
         { id : "geo_is_contact", alias : "geo is contact", dataType : tableau.dataTypeEnum.bool },
         { id : "geo_is_public", alias : "geo is public", dataType : tableau.dataTypeEnum.bool },
-        { id : "views", alias : "view count", dataType : tableau.dataTypeEnum.int },
+        { id : "views", alias : "view count", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         { id : "media", alias : "media", dataType : tableau.dataTypeEnum.string },
         { id : "media_status", alias : "media status", dataType : tableau.dataTypeEnum.string },
         { id : "url_sq", alias : "URL sq 75x75", dataType : tableau.dataTypeEnum.string },
-        { id : "height_sq", alias : "URL sq height", dataType : tableau.dataTypeEnum.int },
-        { id : "width_sq", alias : "URL sq width", dataType : tableau.dataTypeEnum.int },
+        { id : "height_sq", alias : "URL sq height", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
+        { id : "width_sq", alias : "URL sq width", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         { id : "url_t", alias : "URL t 75x100", dataType : tableau.dataTypeEnum.string },
-        { id : "height_t", alias : "URL t height", dataType : tableau.dataTypeEnum.int },
-        { id : "width_t", alias : "URL t width", dataType : tableau.dataTypeEnum.int },
+        { id : "height_t", alias : "URL t height", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
+        { id : "width_t", alias : "URL t width", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         { id : "url_s", alias : "URL s 180x240", dataType : tableau.dataTypeEnum.string },
-        { id : "height_s", alias : "URL s height", dataType : tableau.dataTypeEnum.int },
-        { id : "width_s", alias : "URL s width", dataType : tableau.dataTypeEnum.int },
+        { id : "height_s", alias : "URL s height", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
+        { id : "width_s", alias : "URL s width", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         { id : "url_q", alias : "URL q 150x150", dataType : tableau.dataTypeEnum.string },
-        { id : "height_q", alias : "URL q height", dataType : tableau.dataTypeEnum.int },
-        { id : "width_q", alias : "URL q width", dataType : tableau.dataTypeEnum.int },
+        { id : "height_q", alias : "URL q height", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
+        { id : "width_q", alias : "URL q width", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         { id : "url_m", alias : "URL m 375x500", dataType : tableau.dataTypeEnum.string },
-        { id : "height_m", alias : "URL m height", dataType : tableau.dataTypeEnum.int },
-        { id : "width_m", alias : "URL m width", dataType : tableau.dataTypeEnum.int },
+        { id : "height_m", alias : "URL m height", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
+        { id : "width_m", alias : "URL m width", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         { id : "url_n", alias : "URL n 240x320", dataType : tableau.dataTypeEnum.string },
-        { id : "height_n", alias : "URL n height", dataType : tableau.dataTypeEnum.int },
-        { id : "width_n", alias : "URL n width", dataType : tableau.dataTypeEnum.int },
+        { id : "height_n", alias : "URL n height", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
+        { id : "width_n", alias : "URL n width", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         { id : "url_z", alias : "URL z 480x640", dataType : tableau.dataTypeEnum.string },
-        { id : "height_z", alias : "URL z height", dataType : tableau.dataTypeEnum.int },
-        { id : "width_z", alias : "URL z width", dataType : tableau.dataTypeEnum.int },
+        { id : "height_z", alias : "URL z height", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
+        { id : "width_z", alias : "URL z width", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         { id : "url_c", alias : "URL c 600x800", dataType : tableau.dataTypeEnum.string },
-        { id : "height_c", alias : "URL c height", dataType : tableau.dataTypeEnum.int },
-        { id : "width_c", alias : "URL c width", dataType : tableau.dataTypeEnum.int },
+        { id : "height_c", alias : "URL c height", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
+        { id : "width_c", alias : "URL c width", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         { id : "url_l", alias : "URL l 768x1024", dataType : tableau.dataTypeEnum.string },
-        { id : "height_l", alias : "URL l height", dataType : tableau.dataTypeEnum.int },
-        { id : "width_l", alias : "URL l width", dataType : tableau.dataTypeEnum.int },
+        { id : "height_l", alias : "URL l height", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
+        { id : "width_l", alias : "URL l width", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         { id : "url_o", alias : "URL original", dataType : tableau.dataTypeEnum.string },
-        { id : "height_o", alias : "URL original height", dataType : tableau.dataTypeEnum.int },
-        { id : "width_o", alias : "URL original width", dataType : tableau.dataTypeEnum.int },
+        { id : "height_o", alias : "URL original height", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
+        { id : "width_o", alias : "URL original width", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         { id : "owner", alias : "owner", dataType : tableau.dataTypeEnum.string },
         { id : "server", alias : "server", dataType : tableau.dataTypeEnum.string },
         { id : "secret", alias : "secret", dataType : tableau.dataTypeEnum.string },
         { id : "originalsecret", alias : "original secret", dataType : tableau.dataTypeEnum.string },
-        { id : "farm", alias : "farm", dataType : tableau.dataTypeEnum.int },
+        { id : "farm", alias : "farm", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         { id : "originalformat", alias : "original format", dataType : tableau.dataTypeEnum.string },
         { id : "iconserver", alias : "icon server", dataType : tableau.dataTypeEnum.string },
         { id : "iconfarm", alias : "icon farm", dataType : tableau.dataTypeEnum.string },
