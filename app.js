@@ -137,7 +137,7 @@ app.get('/flickr_people_getphotos', function(req, res) {
             method: "flickr.people.getPhotos",
             api_key: clientId,
             user_id: req.query.user_id,
-            extras: "tags,description,license,date_upload,date_taken,original_format,icon_server,last_update,geo,views,media,path_alias,url_sq,url_t,url_s,url_q,url_m,url_n,url_z,url_c,url_l,url_o",
+            extras: "tags,description,date_taken,geo,views", //,license,date_upload,original_format,icon_server,last_update,media,path_alias,url_sq,url_t,url_s,url_q,url_m,url_n,url_z,url_c,url_l,url_o",
             per_page: pageSize,
             page: req.query.page,
             format: "json",
