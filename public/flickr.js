@@ -413,7 +413,13 @@
             var requestToken = params.oauth_token;
             var hasRequestToken = requestToken && (requestToken.length > 0);
 
-            if (hasRequestToken) {
+            // Sometimes Tableau calls us with the oauth_token query params. But
+            // the only time this cookie is set is after the sign-in is
+            // complete.
+            var oauthTokenSecret = Cookies.get("oauth_token_secret");
+            var isRedirected = oauthTokenSecret && (oauthTokenSecret.length > 0);
+
+            if (hasRequestToken && isRedirected) {
                 var accessToken = getAccessToken(params);
 
                 var token = {
