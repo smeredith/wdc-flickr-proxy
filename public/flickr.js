@@ -96,7 +96,7 @@
             async: false,
             success: function (data) {
 
-                if (data.photos) {
+                if (data.photos && data.photos.page <= data.photos.pages) {
                     var photos = data.photos.photo;
                     for (i = 0; i < photos.length; ++i) {
                         var photo = photos[i];
