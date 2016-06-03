@@ -5,11 +5,6 @@
         var entry = {
             photoid: "",
             tag: "",
-            owner: "",
-            server: "",
-            secret: "",
-            originalsecret: "",
-            farm: 0,
             title: "",
             description_content: "",
             ispublic: false,
@@ -67,7 +62,12 @@
             width_l: 0,
             url_o: "",
             height_o: 0,
-            width_o: 0
+            width_o: 0,
+            owner: "",
+            server: "",
+            secret: "",
+            originalsecret: "",
+            farm: 0,
         };
         return entry;
     };
@@ -114,11 +114,6 @@
                         for (e = 0; e < entriesToCreateThisPhoto; ++e) {
                             var entry = getNewEntry();
                             entry.photoid = photo.id;
-                            entry.owner = photo.owner;
-                            entry.server = photo.server;
-                            entry.secret = photo.secret;
-                            entry.originalsecret = photo.originalsecret;
-                            entry.farm = photo.farm;
                             entry.title = photo.title;
                             entry.description_content = photo.description._content;
                             entry.ispublic = photo.ispublic == 1;
@@ -177,6 +172,11 @@
                             entry.url_o = photo.url_o;
                             entry.height_o = photo.height_o;
                             entry.width_o = photo.width_o;
+                            entry.owner = photo.owner;
+                            entry.server = photo.server;
+                            entry.secret = photo.secret;
+                            entry.originalsecret = photo.originalsecret;
+                            entry.farm = photo.farm;
 
                             if (e < tags.length) {
                                 entry.tag = tags[e];
@@ -209,10 +209,6 @@
         var cols = [
         { id : "photoid", alias : "photo id", dataType : tableau.dataTypeEnum.string },
         { id : "tag", alias : "tag", dataType : tableau.dataTypeEnum.string },
-        { id : "owner", alias : "owner", dataType : tableau.dataTypeEnum.string },
-        { id : "secret", alias : "secret", dataType : tableau.dataTypeEnum.string },
-        { id : "originalsecret", alias : "original secret", dataType : tableau.dataTypeEnum.string },
-        { id : "farm", alias : "farm", dataType : tableau.dataTypeEnum.int },
         { id : "title", alias : "title", dataType : tableau.dataTypeEnum.string },
         { id : "description_content", alias : "description", dataType : tableau.dataTypeEnum.string },
         { id : "ispublic", alias : "is public", dataType : tableau.dataTypeEnum.bool },
@@ -271,6 +267,11 @@
         { id : "url_o", alias : "original URL", dataType : tableau.dataTypeEnum.string },
         { id : "height_o", alias : "original height", dataType : tableau.dataTypeEnum.int },
         { id : "width_o", alias : "original width", dataType : tableau.dataTypeEnum.int },
+        { id : "owner", alias : "owner", dataType : tableau.dataTypeEnum.string },
+        { id : "server", alias : "server", dataType : tableau.dataTypeEnum.string },
+        { id : "secret", alias : "secret", dataType : tableau.dataTypeEnum.string },
+        { id : "originalsecret", alias : "original secret", dataType : tableau.dataTypeEnum.string },
+        { id : "farm", alias : "farm", dataType : tableau.dataTypeEnum.int },
         ];
 
         var tableInfo = {
@@ -284,8 +285,8 @@
 
     myConnector.getData = function (table, doneCallback) {
 
-        if (tableau.password.length == 0) {
-            tableau.abortWithError("No OAUTH token.");
+        if (tableau.password.length == 0 || !isTokenValid()) {
+            tableau.abortForAuth();
         }
 
         // Limit for debugging...
@@ -392,7 +393,7 @@
     myConnector.init = function (initCallback) {
 
         tableau.authType = tableau.authTypeEnum.custom;
-        tableau.connectionName="Flickr WDC";
+        tableau.connectionName="Flickr Photo Metadata";
         initCallback();
 
         if (tableau.phase == tableau.phaseEnum.gatherDataPhase) {
