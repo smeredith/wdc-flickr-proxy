@@ -3,17 +3,6 @@
     //
     // Use the Flickr API
     //
-    function readCookie(name) {
-        var nameEQ = name + "=";
-        var ca = document.cookie.split(';');
-        for(var i=0;i < ca.length;i++) {
-            var c = ca[i];
-            while (c.charAt(0)==' ') c = c.substring(1,c.length);
-            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-        }
-        return null;
-    }
-
     function getNewEntry() {
         var entry = {
             photoid: "",
@@ -95,10 +84,15 @@
             type: "GET",
             data: {
                 page: page.toString(),
+                user_id: tableau.username,
+                token: tableau.password,
             },
             dataType: 'json',
             async: false,
             success: function (data) {
+
+                tableau.log("getImages(): " + data);
+
                 if (data.photos) {
                     var photos = data.photos.photo;
                     var i;
@@ -278,47 +272,125 @@
         { id : "width_o", alias : "original width", dataType : tableau.dataTypeEnum.int },
         ];
 
-    var tableInfo = {
-        id : "flickrmetadata",
-        alias : "Flickr metadata",
-        columns : cols
+        var tableInfo = {
+            id : "flickrmetadata",
+            alias : "Flickr metadata",
+            columns : cols
+        };
+
+        schemaCallback([tableInfo]);
     };
 
-    schemaCallback([tableInfo]);
-};
+    myConnector.getData = function (table, doneCallback) {
 
-myConnector.getData = function (table, doneCallback) {
+        // Limit for debugging...
+        var maxPages = 2;
 
-    // Limit for debugging...
-    var maxPages = 2;
+        var lastPage = 0;
+        var moreData = true;
+        while (moreData) {
+            var data = getImages(lastPage);
+            lastPage++;
+            if (data.length == 0 || lastPage >= maxPages) {
+                moreData = false;
+            }
 
-    var lastPage = 0;
-    var moreData = true;
-    while (moreData) {
-        var data = getImages(lastPage);
-        lastPage++;
-        if (data.length == 0 || lastPage >= maxPages) {
-            moreData = false;
+            table.appendRows(data);
+        }
+        doneCallback();
+    };
+
+    function getOauthUrl() {
+        var oauthUrl = "";
+
+        var xhr = $.ajax({
+            url: "oauthurl",
+            type: "GET",
+            dataType: 'text',
+            async: false,
+            success: function (data) {
+                oauthUrl = data;
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                tableau.log(xhr.responseText + "\n" + thrownError);
+                tableau.abortWithError("Error getting metadata from flickr.");
+            }
+        });
+        return oauthUrl;
+    }
+
+    function getAccessToken(params) {
+
+        var accessToken;
+
+        tableau.log("getAccessToken()");
+
+        var xhr = $.ajax({
+            url: "accesstoken",
+            type: "GET",
+            dataType: 'text',
+            async: false,
+            data: params,
+            success: function (data) {
+                accessToken = parseQueryParams(data);
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                tableau.log(xhr.responseText + "\n" + thrownError);
+                tableau.abortWithError("Error getting metadata from flickr.");
+            }
+        });
+
+        return accessToken;
+    }
+
+    function parseQueryParams(url) {
+        var regex = /[?&]([^=#]+)=([^&#]*)/g,
+            params = {},
+            match;
+
+        while(match = regex.exec(url)) {
+            params[match[1]] = match[2];
         }
 
-        table.appendRows(data);
+        return params;
     }
-    doneCallback();
-};
 
-myConnector.init = function (initCallback) {
+    myConnector.init = function (initCallback) {
 
-    // Auth is handled by the proxy so the client doesn't need to know about it.
-    tableau.authType = tableau.authTypeEnum.none;
-    tableau.connectionName="Flickr WDC";
-    initCallback();
+        tableau.authType = tableau.authTypeEnum.custom;
+        tableau.connectionName="Flickr WDC";
+        initCallback();
 
-    if (tableau.phase == tableau.phaseEnum.interactivePhase || tableau.phase == tableau.phaseEnum.authPhase) {
-        tableau.submit();
-    }
-};
+        if (tableau.phase == tableau.phaseEnum.authPhase || tableau.phase == tableau.phaseEnum.interactivePhase) {
+            var params = parseQueryParams(window.location.href);
 
-tableau.registerConnector(myConnector);
+            // If redirected here from the oauth sign-in page, there will be an
+            // oauth_token query param on our URL.
+            var requestToken = params.oauth_token;
+            var hasRequestToken = requestToken && (requestToken.length > 0);
+
+            if (hasRequestToken) {
+                var accessToken = getAccessToken(params);
+
+                var token = {
+                    public: accessToken.oauth_token,
+                    secret: accessToken.oauth_token_secret,
+                };
+
+                tableau.username = decodeURIComponent(accessToken.user_nsid);
+                tableau.password = JSON.stringify(token);
+
+                tableau.submit();
+            } else {
+                // Navigate to the sign-in page.
+                var oauthUrl = getOauthUrl();
+                console.log(oauthUrl);
+                window.location.href = oauthUrl;
+            }
+        }
+    };
+
+    tableau.registerConnector(myConnector);
 
 })();
 
