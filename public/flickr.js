@@ -284,6 +284,10 @@
 
     myConnector.getData = function (table, doneCallback) {
 
+        if (tableau.password.length == 0) {
+            tableau.abortWithError("No OAUTH token.");
+        }
+
         // Limit for debugging...
         var maxPages = 2;
 
@@ -360,11 +364,45 @@
         return accessToken;
     }
 
+    function isTokenValid() {
+        var valid = false;
+
+        tableau.log("isTokenValid()");
+
+        var xhr = $.ajax({
+            url: "istokenvalid",
+            type: "GET",
+            dataType: 'text',
+            async: false,
+            data: {
+                token: tableau.password,
+            },
+            success: function (data) {
+                valid = (data == "ok");
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                tableau.log(xhr.responseText + "\n" + thrownError);
+                tableau.abortWithError("Error validating flickr credentials.");
+            }
+        });
+
+        return valid;
+    }
+
     myConnector.init = function (initCallback) {
 
         tableau.authType = tableau.authTypeEnum.custom;
         tableau.connectionName="Flickr WDC";
         initCallback();
+
+        if (tableau.phase == tableau.phaseEnum.gatherDataPhase) {
+
+            // If we don't have a valid token stored in password, we need to
+            // re-authenticate.
+            if (tableau.password.length == 0 || !isTokenValid()) {
+                tableau.abortForAuth();
+            }
+        }
 
         if (tableau.phase == tableau.phaseEnum.authPhase || tableau.phase == tableau.phaseEnum.interactivePhase) {
             var params = parseQueryParams(window.location.href);

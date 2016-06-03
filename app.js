@@ -161,6 +161,50 @@ app.get('/flickr_people_getphotos', function(req, res) {
     });
 });
 
+app.get('/istokenvalid', function(req, res) {
+
+    console.log("istokenvalid");
+
+    var auth = oauth({
+        consumer: {
+            public: clientId,
+            secret: clientSecret
+        },
+        signature_method: 'HMAC-SHA1'
+    });
+
+    var token = JSON.parse(req.query.token);
+
+    var reqData = {
+        url: flickrRestURL,
+        method: 'GET',
+        data: {
+            method: "flickr.test.login",
+            api_key: clientId,
+            format: "json",
+            nojsoncallback: "1",
+        }
+    };
+
+    var options = {
+        url: reqData.url,
+        method: reqData.method,
+        qs: reqData.data,
+        headers: auth.toHeader(auth.authorize(reqData, token))
+    };
+
+    request(options, function (error, response, body) {
+        if (!error) {
+            console.log(body);
+            resJson = JSON.parse(body);
+            res.write(resJson.stat);
+            res.end();
+        } else {
+            console.log(error);
+        }
+    });
+});
+
 http.createServer(app).listen(app.get('port'), function(){
     console.log('Server listening on port ' + app.get('port'));
 });
