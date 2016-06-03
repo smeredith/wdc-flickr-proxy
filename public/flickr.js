@@ -94,7 +94,7 @@
         var page = lastPage + 1;
 
         var xhr = $.ajax({
-            url: "http://localhost:3333/flickr_people_getPhotos",
+            url: "flickr_people_getPhotos",
             type: "GET",
             data: {
                 per_page: pageSize.toString(),
