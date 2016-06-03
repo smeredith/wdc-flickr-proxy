@@ -15,9 +15,6 @@
             datetakenunknown: false,
             dateupload: "",
             license: 0,
-            originalformat: "",
-            iconserver: "",
-            iconfarm: "",
             lastupdate: "",
             latitude: 0,
             longitude: 0,
@@ -32,7 +29,6 @@
             views: 0,
             media: "",
             media_status: "",
-            pathalias: "",
             url_sq: "",
             height_sq: 0,
             width_sq: 0,
@@ -68,6 +64,10 @@
             secret: "",
             originalsecret: "",
             farm: 0,
+            originalformat: "",
+            iconserver: "",
+            iconfarm: "",
+            pathalias: "",
         };
         return entry;
     };
@@ -124,9 +124,6 @@
                             entry.datetakenunknown = photo.datetakenunknown == 1;
                             entry.dateupload = photo.dateupload;
                             entry.license = photo.license;
-                            entry.originalformat = photo.originalformat;
-                            entry.iconserver = photo.iconserver;
-                            entry.iconfarm = photo.iconfarm;
                             entry.lastupdate = photo.lastupdate;
                             entry.latitude = photo.latitude;
                             entry.longitude = photo.longitude;
@@ -141,7 +138,6 @@
                             entry.views = photo.views;
                             entry.media = photo.media;
                             entry.media_status = photo.media_status;
-                            entry.pathalias = photo.pathalias;
                             entry.url_sq = photo.url_sq;
                             entry.height_sq = photo.height_sq;
                             entry.width_sq = photo.width_sq;
@@ -177,6 +173,10 @@
                             entry.secret = photo.secret;
                             entry.originalsecret = photo.originalsecret;
                             entry.farm = photo.farm;
+                            entry.originalformat = photo.originalformat;
+                            entry.iconserver = photo.iconserver;
+                            entry.iconfarm = photo.iconfarm;
+                            entry.pathalias = photo.pathalias;
 
                             if (e < tags.length) {
                                 entry.tag = tags[e];
@@ -219,9 +219,6 @@
         { id : "datetakenunknown", alias : "is date taken unknown", dataType : tableau.dataTypeEnum.bool },
         { id : "dateupload", alias : "date uploaded", dataType : tableau.dataTypeEnum.string },
         { id : "license", alias : "license", dataType : tableau.dataTypeEnum.int },
-        { id : "originalformat", alias : "original format", dataType : tableau.dataTypeEnum.string },
-        { id : "iconserver", alias : "icon server", dataType : tableau.dataTypeEnum.string },
-        { id : "iconfarm", alias : "icon farm", dataType : tableau.dataTypeEnum.string },
         { id : "lastupdate", alias : "last update", dataType : tableau.dataTypeEnum.string },
         { id : "latitude", alias : "latitude", dataType : tableau.dataTypeEnum.float },
         { id : "longitude", alias : "longitude", dataType : tableau.dataTypeEnum.float },
@@ -236,7 +233,6 @@
         { id : "views", alias : "view count", dataType : tableau.dataTypeEnum.int },
         { id : "media", alias : "media", dataType : tableau.dataTypeEnum.string },
         { id : "media_status", alias : "media status", dataType : tableau.dataTypeEnum.string },
-        { id : "pathalias", alias : "path alias", dataType : tableau.dataTypeEnum.string },
         { id : "url_sq", alias : "sq URL", dataType : tableau.dataTypeEnum.string },
         { id : "height_sq", alias : "sq height", dataType : tableau.dataTypeEnum.int },
         { id : "width_sq", alias : "sq width", dataType : tableau.dataTypeEnum.int },
@@ -272,6 +268,10 @@
         { id : "secret", alias : "secret", dataType : tableau.dataTypeEnum.string },
         { id : "originalsecret", alias : "original secret", dataType : tableau.dataTypeEnum.string },
         { id : "farm", alias : "farm", dataType : tableau.dataTypeEnum.int },
+        { id : "originalformat", alias : "original format", dataType : tableau.dataTypeEnum.string },
+        { id : "iconserver", alias : "icon server", dataType : tableau.dataTypeEnum.string },
+        { id : "iconfarm", alias : "icon farm", dataType : tableau.dataTypeEnum.string },
+        { id : "pathalias", alias : "path alias", dataType : tableau.dataTypeEnum.string },
         ];
 
         var tableInfo = {
