@@ -202,8 +202,6 @@
             }
         });
 
-        var entry = getNewEntry();
-        imageList.push(entry);
         return imageList;
     }
 
