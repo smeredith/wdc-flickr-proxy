@@ -13,7 +13,12 @@ app.set('port', process.env.PORT);
 app.use(cookieParser());
 app.use(express.static(__dirname + '/public'));
 
+// Number of records to get with each request to Flickr.
 var pageSize = process.env.FLICKR_WDC_PAGESIZE || "100";
+
+// Limit on the number of pages to request. Usefull for debugging.
+var pageLimit = process.env.FLICKR_WDC_PAGELIMIT;
+
 var clientId = process.env.FLICKR_WDC_API_KEY;
 var clientSecret = process.env.FLICKR_WDC_API_SECRET;
 var redirectURL = process.env.FLICKR_WDC_HOSTPATH + "/flickr.html";
@@ -137,6 +142,7 @@ app.get('/flickr_people_getphotos', function(req, res) {
             page: req.query.page,
             format: "json",
             nojsoncallback: "1",
+            //privacy_filter: "1",    // set to 1 to get only public photos.
         }
     };
 
@@ -147,17 +153,24 @@ app.get('/flickr_people_getphotos', function(req, res) {
         headers: auth.toHeader(auth.authorize(reqData, token))
     };
 
-    console.log("Getting page " + req.query.page + " for user_id: " + options.qs.user_id);
+    if (pageLimit && (parseInt(req.query.page) > parseInt(pageLimit))) {
+        console.log("Page limit reached. Stopping.");
+        res.write('{"photos":{}, "stat":"ok"}');
+        res.end();
+    } else {
 
-    request(options, function (error, response, body) {
-        if (!error) {
-            console.log("got flickr.people.getPhotos response");
-            res.write(body);
-            res.end();
-        } else {
-            console.log(error);
-        }
-    });
+        console.log("Getting page " + req.query.page + " for user_id: " + options.qs.user_id);
+
+        request(options, function (error, response, body) {
+            if (!error) {
+                console.log("got flickr.people.getPhotos response");
+                res.write(body);
+                res.end();
+            } else {
+                console.log(error);
+            }
+        });
+    }
 });
 
 app.get('/istokenvalid', function(req, res) {

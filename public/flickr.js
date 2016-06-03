@@ -286,19 +286,16 @@
             tableau.abortForAuth();
         }
 
-        // Limit for debugging...
-        var maxPages = 2;
-
         var lastPage = 0;
         var moreData = true;
         while (moreData) {
             var data = getImageMetadata(lastPage);
             lastPage++;
-            if (data.length == 0 || lastPage >= maxPages) {
+            if (data.length == 0) {
                 moreData = false;
+            } else {
+                table.appendRows(data);
             }
-
-            table.appendRows(data);
         }
         doneCallback();
     };
