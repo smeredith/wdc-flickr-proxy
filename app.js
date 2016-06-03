@@ -13,7 +13,7 @@ app.set('port', process.env.PORT);
 app.use(cookieParser());
 app.use(express.static(__dirname + '/public'));
 
-var pageSize = process.env.FLICKR_WDC_PAGESIZE;
+var pageSize = process.env.FLICKR_WDC_PAGESIZE || "100";
 var clientId = process.env.FLICKR_WDC_API_KEY;
 var clientSecret = process.env.FLICKR_WDC_API_SECRET;
 var redirectURL = process.env.FLICKR_WDC_HOSTPATH + "/flickr.html";
@@ -111,7 +111,6 @@ app.get('/oauthurl', function(req, res) {
     });
 });
 
-// Signs the URL in the url query param and requests it, returning the response.
 app.get('/flickr_people_getphotos', function(req, res) {
 
     console.log("flickr_people_getphotos");
@@ -205,8 +204,27 @@ app.get('/istokenvalid', function(req, res) {
     });
 });
 
-http.createServer(app).listen(app.get('port'), function(){
-    console.log('Server listening on port ' + app.get('port'));
-});
+// Validate that the server environment variable have been set.
+function envVarsAreSet() {
+    var valid = true;
+    if (!process.env.FLICKR_WDC_API_KEY) {
+        console.log("Environment variable FLICKR_WDC_API_KEY not set. Get this developer API key from Flickr.");
+        valid = false;
+    }
+    if (!process.env.FLICKR_WDC_API_SECRET) {
+        console.log("Environment variable FLICKR_WDC_API_SECRET not set. Get this developer API secret from Flickr.");
+        valid = false;
+    }
+    if (!process.env.FLICKR_WDC_HOSTPATH) {
+        console.log("Environment variable FLICKR_WDC_HOSTPATH not set. This is the base URL of this wdc-flickr-proxy server.");
+        valid = false;
+    }
+    return valid;
+}
 
+if (envVarsAreSet()) {
+    http.createServer(app).listen(app.get('port'), function(){
+        console.log('Server listening on port ' + app.get('port'));
+    });
+}
 
