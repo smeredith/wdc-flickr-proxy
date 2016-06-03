@@ -5,18 +5,17 @@ var http = require('http');
 var request = require('request');
 var oauth = require('oauth-1.0a');
 var path = require('path');
-var config = require('./config-private.js');    // Not checked in.
 var sys = require('util');
 
 var app = express();
 
-app.set('port', (process.env.PORT || config.PORT));
+app.set('port', process.env.FLICKR_WDC_PORT);
 app.use(cookieParser());
 app.use(express.static(__dirname + '/public'));
 
-var clientId = config.CLIENT_ID;
-var clientSecret = config.CLIENT_SECRET;
-var redirectURL = config.HOSTPATH + ":" + app.get('port') + "/redirect";
+var clientId = process.env.FLICKR_WDC_API_KEY;
+var clientSecret =process.env.FLICKR_WDC_API_SECRET;
+var redirectURL = process.env.FLICKR_WDC_HOSTPATH + ":" + app.get('port') + "/redirect";
 var wdcURL = "./flickr.html";
 var flickrRestURL = "https://api.flickr.com/services/rest/";
 
