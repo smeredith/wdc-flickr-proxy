@@ -68,7 +68,6 @@ app.get('/redirect', function(req, res) {
             res.cookie('oauth_token', params.oauth_token);
             res.cookie('oauth_token_secret', params.oauth_token_secret);
             res.cookie('user_nsid', params.user_nsid);
-            res.cookie('client_id', clientId);
 
             // Auth is complete. Return the WDC page.
             res.redirect(wdcURL);
@@ -153,7 +152,7 @@ app.get('/flickr_people_getPhotos', function(req, res) {
         method: 'GET',
         data: {
             method: "flickr.people.getPhotos",
-            api_key: req.cookies.client_id,
+            api_key: clientId,
             user_id: req.cookies.user_nsid,
             extras: "tags,description,license,date_upload,date_taken,original_format,icon_server,last_update,geo,views,media,path_alias,url_sq,url_t,url_s,url_q,url_m,url_n,url_z,url_c,url_l,url_o",
             per_page: req.query.per_page,
