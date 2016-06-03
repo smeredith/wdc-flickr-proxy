@@ -13,8 +13,9 @@ app.set('port', process.env.FLICKR_WDC_PORT);
 app.use(cookieParser());
 app.use(express.static(__dirname + '/public'));
 
+var pageSize = process.env.FLICKR_WDC_PAGESIZE | "2";
 var clientId = process.env.FLICKR_WDC_API_KEY;
-var clientSecret =process.env.FLICKR_WDC_API_SECRET;
+var clientSecret = process.env.FLICKR_WDC_API_SECRET;
 var redirectURL = process.env.FLICKR_WDC_HOSTPATH + ":" + app.get('port') + "/redirect";
 var wdcURL = "./flickr.html";
 var flickrRestURL = "https://api.flickr.com/services/rest/";
@@ -154,7 +155,7 @@ app.get('/flickr_people_getPhotos', function(req, res) {
             api_key: clientId,
             user_id: req.cookies.user_nsid,
             extras: "tags,description,license,date_upload,date_taken,original_format,icon_server,last_update,geo,views,media,path_alias,url_sq,url_t,url_s,url_q,url_m,url_n,url_z,url_c,url_l,url_o",
-            per_page: req.query.per_page,
+            per_page: pageSize,
             page: req.query.page,
             format: "json",
             nojsoncallback: "1",

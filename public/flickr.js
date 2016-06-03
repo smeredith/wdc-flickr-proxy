@@ -88,16 +88,12 @@
     function getImages(lastPage) {
         var imageList = [];
 
-        // This is the number of results to ask for in a single response.
-        // The maximum Flickr supports is 500.
-        var pageSize = 5;
         var page = lastPage + 1;
 
         var xhr = $.ajax({
             url: "flickr_people_getPhotos",
             type: "GET",
             data: {
-                per_page: pageSize.toString(),
                 page: page.toString(),
             },
             dataType: 'json',
