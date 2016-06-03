@@ -65,6 +65,8 @@ app.get('/accesstoken', function(req, res) {
     });
  });
 
+// Get the URL the client should use for sign-in UI. This URL requires a request
+// token, so this function gets that first.
 app.get('/oauthurl', function(req, res) {
 
     console.log("in /oauthurl");
@@ -110,9 +112,9 @@ app.get('/oauthurl', function(req, res) {
 });
 
 // Signs the URL in the url query param and requests it, returning the response.
-app.get('/flickr_people_getPhotos', function(req, res) {
+app.get('/flickr_people_getphotos', function(req, res) {
 
-    console.log("flickr_people_getPhotos");
+    console.log("flickr_people_getphotos");
 
     var auth = oauth({
         consumer: {
@@ -146,8 +148,7 @@ app.get('/flickr_people_getPhotos', function(req, res) {
         headers: auth.toHeader(auth.authorize(reqData, token))
     };
 
-    console.log("Requesting " + options.url);
-    console.log("user_id: " + options.qs.user_id);
+    console.log("Getting page " + req.query.page + " for user_id: " + options.qs.user_id);
 
     request(options, function (error, response, body) {
         if (!error) {

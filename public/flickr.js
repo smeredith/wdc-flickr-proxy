@@ -1,8 +1,6 @@
 (function () {
 
-    //
-    // Use the Flickr API
-    //
+    // This object represent one returned row.
     function getNewEntry() {
         var entry = {
             photoid: "",
@@ -74,13 +72,20 @@
         return entry;
     };
 
-    function getImages(lastPage) {
+    // Get a set of image metadata from the server.
+    function getImageMetadata(lastPage) {
         var imageList = [];
 
+        // We aks for a page of metadata at a time, where a page is some number
+        // of records as configured in the proxy.
         var page = lastPage + 1;
 
+        // We ask our proxy for the metadata instead of asking Flickr directly
+        // so the proxy can sign the request with the token we pass to it.
+        // We can't sign the request on the client because it requires the token
+        // plus an API secret, which must not be made available to the client.
         var xhr = $.ajax({
-            url: "flickr_people_getPhotos",
+            url: "flickr_people_getphotos",
             type: "GET",
             data: {
                 page: page.toString(),
@@ -91,26 +96,22 @@
             async: false,
             success: function (data) {
 
-                tableau.log("getImages(): " + data);
-
                 if (data.photos) {
                     var photos = data.photos.photo;
-                    var i;
                     for (i = 0; i < photos.length; ++i) {
                         var photo = photos[i];
 
                         // Make one row per tag. If a photo has no tags or one tag, it
                         // will get one row in the results. If a photo has multiple tags,
-                        // it will get multiple rows: one per tag.
+                        // it will get multiple rows: one per tag. This is to
+                        // allow for easy tag analysis in Tableau.
                         var tags = photo.tags.split(" ");
                         var entriesToCreateThisPhoto = tags.length;
                         if (entriesToCreateThisPhoto == 0) {
                             entriesToCreateThisPhoto = 1;
                         }
 
-                        var e;
                         for (e = 0; e < entriesToCreateThisPhoto; ++e) {
-
                             var entry = getNewEntry();
                             entry.photoid = photo.id;
                             entry.owner = photo.owner;
@@ -289,7 +290,7 @@
         var lastPage = 0;
         var moreData = true;
         while (moreData) {
-            var data = getImages(lastPage);
+            var data = getImageMetadata(lastPage);
             lastPage++;
             if (data.length == 0 || lastPage >= maxPages) {
                 moreData = false;
@@ -300,6 +301,9 @@
         doneCallback();
     };
 
+    // Ask the proxy for the flickr URL to use for sign-in UI. The URL needs a
+    // request token as part of that URL, so the proxy gets that as part of this
+    // call.
     function getOauthUrl() {
         var oauthUrl = "";
 
@@ -319,30 +323,6 @@
         return oauthUrl;
     }
 
-    function getAccessToken(params) {
-
-        var accessToken;
-
-        tableau.log("getAccessToken()");
-
-        var xhr = $.ajax({
-            url: "accesstoken",
-            type: "GET",
-            dataType: 'text',
-            async: false,
-            data: params,
-            success: function (data) {
-                accessToken = parseQueryParams(data);
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                tableau.log(xhr.responseText + "\n" + thrownError);
-                tableau.abortWithError("Error getting metadata from flickr.");
-            }
-        });
-
-        return accessToken;
-    }
-
     function parseQueryParams(url) {
         var regex = /[?&]([^=#]+)=([^&#]*)/g,
             params = {},
@@ -353,6 +333,31 @@
         }
 
         return params;
+    }
+
+    // Exchanges a request token for an access token and return it.
+    function getAccessToken(requestToken) {
+
+        var accessToken;
+
+        tableau.log("getAccessToken()");
+
+        var xhr = $.ajax({
+            url: "accesstoken",
+            type: "GET",
+            dataType: 'text',
+            async: false,
+            data: requestToken,
+            success: function (data) {
+                accessToken = parseQueryParams(data);
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                tableau.log(xhr.responseText + "\n" + thrownError);
+                tableau.abortWithError("Error getting metadata from flickr.");
+            }
+        });
+
+        return accessToken;
     }
 
     myConnector.init = function (initCallback) {
@@ -393,5 +398,3 @@
     tableau.registerConnector(myConnector);
 
 })();
-
-
