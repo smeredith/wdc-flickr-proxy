@@ -9,15 +9,15 @@ var sys = require('util');
 
 var app = express();
 
-app.set('port', process.env.FLICKR_WDC_PORT);
+app.set('port', process.env.PORT);
 app.use(cookieParser());
 app.use(express.static(__dirname + '/public'));
 
-var pageSize = process.env.FLICKR_WDC_PAGESIZE | "2";
+var pageSize = process.env.FLICKR_WDC_PAGESIZE;
 var clientId = process.env.FLICKR_WDC_API_KEY;
 var clientSecret = process.env.FLICKR_WDC_API_SECRET;
-var redirectURL = process.env.FLICKR_WDC_HOSTPATH + ":" + app.get('port') + "/redirect";
-var wdcURL = "./flickr.html";
+var redirectURL = process.env.FLICKR_WDC_HOSTPATH + "/redirect";
+var wdcURL = "public/flickr.html";
 var flickrRestURL = "https://api.flickr.com/services/rest/";
 
 // This gets called by the Flickr signin page once authentication is complete.
@@ -70,7 +70,7 @@ app.get('/redirect', function(req, res) {
             res.cookie('user_nsid', params.user_nsid);
 
             // Auth is complete. Return the WDC page.
-            res.redirect(wdcURL);
+            res.sendFile(wdcURL, { root: __dirname });
         } else {
             console.log(error);
         }
@@ -123,7 +123,7 @@ app.get('/flickr', function(req, res) {
 
     if (req.cookies.oauth_token) {
         console.log("Have access token.");
-        res.redirect(wdcURL);
+        res.sendFile(wdcURL, { root: __dirname });
     } else {
         getRequestToken(res);
     }
@@ -169,10 +169,14 @@ app.get('/flickr_people_getPhotos', function(req, res) {
         headers: auth.toHeader(auth.authorize(reqData, token))
     };
 
+    console.log("Requesting " + options.url);
+    console.log("user_id: " + options.qs.user_id);
+
     request(options, function (error, response, body) {
         if (!error) {
             console.log("got flickr.people.getPhotos response");
-            res.send(body);
+            res.write(body);
+            res.end();
         } else {
             console.log(error);
         }
