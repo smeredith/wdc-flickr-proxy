@@ -186,6 +186,14 @@ app.get('/istokenvalid', function(req, res) {
 
     var token = JSON.parse(req.query.token);
 
+    if (!token.public || token.public.length == 0) {
+        res.end();
+    }
+
+    if (!token.secret || token.secret.length == 0) {
+        res.end();
+    }
+
     var reqData = {
         url: flickrRestURL,
         method: 'GET',
