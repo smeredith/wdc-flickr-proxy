@@ -62,6 +62,10 @@ app.get('/accesstoken', function(req, res) {
         if (!error) {
             console.log("got access token: " + body);
 
+            // Done with this cookie. The client js uses it as a clue for when
+            // to exchange the request token for an access token. We did that,
+            // so clear the cookie.
+            res.clearCookie("oauth_token_secret");
             res.write(body);
             res.end();
         } else {

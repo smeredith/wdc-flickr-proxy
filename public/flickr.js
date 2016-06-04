@@ -207,48 +207,55 @@
 
         tableau.authType = tableau.authTypeEnum.custom;
         tableau.connectionName="Flickr Photo Metadata";
-        initCallback();
+
+        tableau.log("phase: " + tableau.phase);
 
         if (tableau.phase == tableau.phaseEnum.gatherDataPhase) {
 
             // If we don't have a valid token stored in password, we need to
             // re-authenticate.
             if (tableau.password.length == 0 || !isTokenValid()) {
+                tableau.log("gatherDataPhase abortForAuth()");
                 tableau.abortForAuth();
             }
         }
 
+        initCallback();
+
         if (tableau.phase == tableau.phaseEnum.authPhase || tableau.phase == tableau.phaseEnum.interactivePhase) {
-            var params = parseQueryParams(window.location.href);
-
-            // If redirected here from the oauth sign-in page, there will be an
-            // oauth_token query param on our URL.
-            var requestToken = params.oauth_token;
-            var hasRequestToken = requestToken && (requestToken.length > 0);
-
-            // Sometimes Tableau calls us with the oauth_token query params. But
-            // the only time this cookie is set is after the sign-in is
-            // complete.
-            var oauthTokenSecret = Cookies.get("oauth_token_secret");
-            var isRedirected = oauthTokenSecret && (oauthTokenSecret.length > 0);
-
-            if (hasRequestToken && isRedirected) {
-                var accessToken = getAccessToken(params);
-
-                var token = {
-                    public: accessToken.oauth_token,
-                    secret: accessToken.oauth_token_secret,
-                };
-
-                tableau.username = decodeURIComponent(accessToken.user_nsid);
-                tableau.password = JSON.stringify(token);
-
+            var accessToken = tableau.password;
+            if (accessToken && (accessToken.length > 0)) {
+                // If we have an access token, we are done with auth.
+                tableau.log("have access token; calling submit()");
                 tableau.submit();
             } else {
-                // Navigate to the sign-in page.
-                var oauthUrl = getOauthUrl();
-                console.log(oauthUrl);
-                window.location.href = oauthUrl;
+                // If we have this cookie, then we are being called back after
+                // the sign-in page and we need to exchange a request
+                // token for an access token.
+                tableau.log("no access token");
+                var oauthTokenSecret = Cookies.get("oauth_token_secret");
+                if (oauthTokenSecret && (oauthTokenSecret.length > 0)) {
+                    // If redirected here from the oauth sign-in page, there will be an
+                    // oauth_token query param on our URL.
+                    tableau.log("found cookie; calling getAccessToken()");
+                    var params = parseQueryParams(window.location.href);
+                    var accessToken = getAccessToken(params);
+                    var token = {
+                        public: accessToken.oauth_token,
+                        secret: accessToken.oauth_token_secret,
+                    };
+
+                    tableau.username = decodeURIComponent(accessToken.user_nsid);
+                    tableau.password = JSON.stringify(token);
+                    tableau.submit();
+                } else {
+                    // We don't have an access token and we aren't being called
+                    // back from sign-in page, we need to navigate to the
+                    // sign-in page.
+                    tableau.log("did not find cookie; redirecting to sign-in page");
+                    var oauthUrl = getOauthUrl();
+                    window.location.href = oauthUrl;
+                }
             }
         }
     };
