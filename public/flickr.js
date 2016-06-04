@@ -48,7 +48,9 @@
                             entry.longitude = photo.longitude;
                             entry.datetaken = photo.datetaken;
                             entry.views = photo.views;
-
+                            entry.url_o = photo.url_o;
+                            entry.height_o = photo.height_o;
+                            entry.width_o = photo.width_o;
                             if (e < tags.length) {
                                 entry.tag = tags[e];
                             }
@@ -83,6 +85,9 @@
         { id : "longitude", alias : "longitude", dataType : tableau.dataTypeEnum.float },
         { id : "datetaken", alias : "date taken", dataType : tableau.dataTypeEnum.datetime },
         { id : "views", alias : "view count", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.measure },
+        { id : "url_o", alias : "URL original", dataType : tableau.dataTypeEnum.string },
+        { id : "height_o", alias : "URL original height", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
+        { id : "width_o", alias : "URL original width", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         ];
 
         var tableInfo = {
