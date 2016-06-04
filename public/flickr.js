@@ -1,20 +1,5 @@
 (function () {
 
-    // This object represent one returned row.
-    function getNewEntry() {
-        var entry = {
-            photoid: "",
-            tag: "",
-            title: "",
-            description_content: "",
-            latitude: 0,
-            longitude: 0,
-            datetaken: "",
-            views: 0,
-        };
-        return entry;
-    };
-
     // Get a set of image metadata from the server via the WDC proxy.
     function getImageMetadata(lastPage) {
         var imageList = [];
@@ -55,7 +40,7 @@
                         }
 
                         for (e = 0; e < entriesToCreateThisPhoto; ++e) {
-                            var entry = getNewEntry();
+                            var entry = {};
                             entry.photoid = photo.id;
                             entry.title = photo.title;
                             entry.description_content = photo.description._content;
