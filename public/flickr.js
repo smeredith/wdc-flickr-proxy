@@ -2,7 +2,7 @@
 
     // Get a set of image metadata from the server via the WDC proxy.
     function getImageMetadata(lastPage) {
-        var imageList = [];
+        var metadataList = [];
 
         // We aks for a page of metadata at a time, where a page is some number
         // of records as configured in the proxy.
@@ -19,6 +19,63 @@
                 page: page.toString(),
                 user_id: tableau.username,
                 token: tableau.password,
+                extras: "description,date_taken,geo,views,url_o", //,license,date_upload,original_format,icon_server,last_update,media,path_alias,url_sq,url_t,url_s,url_q,url_m,url_n,url_z,url_c,url_l",
+            },
+            dataType: 'json',
+            async: false,
+            success: function (data) {
+
+                if (data.photos && data.photos.page <= data.photos.pages) {
+                    var photos = data.photos.photo;
+                    for (i = 0; i < photos.length; ++i) {
+                        var photo = photos[i];
+
+                        // Make one row per photo.
+                        var entry = {};
+                        entry.photoid = photo.id;
+                        entry.title = photo.title;
+                        entry.description_content = photo.description._content;
+                        entry.latitude = photo.latitude;
+                        entry.longitude = photo.longitude;
+                        entry.datetaken = photo.datetaken;
+                        entry.views = photo.views;
+                        entry.url_o = photo.url_o;
+                        entry.height_o = photo.height_o;
+                        entry.width_o = photo.width_o;
+
+                        metadataList.push(entry);
+                    }
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                tableau.log(xhr.responseText + "\n" + thrownError);
+                tableau.abortWithError("Error getting metadata from flickr.");
+            }
+        });
+
+        return metadataList;
+    }
+
+    // Get a set of tags from the server via the WDC proxy.
+    function getTags(lastPage) {
+        var tagList = [];
+
+        // We aks for a page of metadata at a time, where a page is some number
+        // of records as configured in the proxy.
+        var page = lastPage + 1;
+
+        // We ask our proxy for the metadata instead of asking Flickr directly
+        // so the proxy can sign the request with the token we pass to it.
+        // We can't sign the request on the client because it requires the token
+        // plus an API secret, which must not be made available to the client.
+        var xhr = $.ajax({
+            url: "flickr_people_getphotos",
+            type: "GET",
+            data: {
+                page: page.toString(),
+                user_id: tableau.username,
+                token: tableau.password,
+                extras: "tags",
             },
             dataType: 'json',
             async: false,
@@ -42,31 +99,22 @@
                         for (e = 0; e < entriesToCreateThisPhoto; ++e) {
                             var entry = {};
                             entry.photoid = photo.id;
-                            entry.title = photo.title;
-                            entry.description_content = photo.description._content;
-                            entry.latitude = photo.latitude;
-                            entry.longitude = photo.longitude;
-                            entry.datetaken = photo.datetaken;
-                            entry.views = photo.views;
-                            entry.url_o = photo.url_o;
-                            entry.height_o = photo.height_o;
-                            entry.width_o = photo.width_o;
                             if (e < tags.length) {
                                 entry.tag = tags[e];
                             }
 
-                            imageList.push(entry);
+                            tagList.push(entry);
                         }
                     }
                 }
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 tableau.log(xhr.responseText + "\n" + thrownError);
-                tableau.abortWithError("Error getting metadata from flickr.");
+                tableau.abortWithError("Error getting tags from flickr.");
             }
         });
 
-        return imageList;
+        return tagList;
     }
 
     var myConnector = tableau.makeConnector();
@@ -76,9 +124,8 @@
         // Return everything the Flickr API returns.
         // The id is close to the field as it comes from the Flickr API.
         // The aliases are little better.
-        var cols = [
+        var metadata = [
         { id : "photoid", alias : "photo id", dataType : tableau.dataTypeEnum.string },
-        { id : "tag", alias : "tag", dataType : tableau.dataTypeEnum.string },
         { id : "title", alias : "title", dataType : tableau.dataTypeEnum.string },
         { id : "description_content", alias : "description", dataType : tableau.dataTypeEnum.string },
         { id : "latitude", alias : "latitude", dataType : tableau.dataTypeEnum.float },
@@ -90,13 +137,24 @@
         { id : "width_o", alias : "URL original width", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         ];
 
-        var tableInfo = {
+        var tags = [
+        { id : "photoid", alias : "photo id", dataType : tableau.dataTypeEnum.string },
+        { id : "tag", alias : "tag", dataType : tableau.dataTypeEnum.string },
+        ];
+
+        var metadataTableInfo = {
             id : "flickrmetadata",
             alias : "Flickr Metadata",
-            columns : cols
+            columns : metadata
         };
 
-        schemaCallback([tableInfo]);
+        var tagsTableInfo = {
+            id : "flickrtags",
+            alias : "Flickr Tags",
+            columns : tags
+        };
+
+        schemaCallback([metadataTableInfo, tagsTableInfo]);
     };
 
     myConnector.getData = function (table, doneCallback) {
@@ -105,10 +163,16 @@
             tableau.abortForAuth();
         }
 
+        tableau.log(table.tableInfo.id);
         var lastPage = 0;
         var moreData = true;
         while (moreData) {
-            var data = getImageMetadata(lastPage);
+            var data;
+            if (table.tableInfo.id == "flickrmetadata") {
+                data = getImageMetadata(lastPage);
+            } else {
+                data = getTags(lastPage);
+            }
             lastPage++;
             if (data.length == 0) {
                 moreData = false;
