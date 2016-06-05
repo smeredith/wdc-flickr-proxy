@@ -42,6 +42,9 @@
                         entry.url_o = photo.url_o;
                         entry.height_o = photo.height_o;
                         entry.width_o = photo.width_o;
+                        entry.ispublic = photo.ispublic == 1;
+                        entry.isfriend = photo.isfriend == 1;
+                        entry.isfamily = photo.isfamily == 1;
 
                         metadataList.push(entry);
                     }
@@ -127,6 +130,9 @@
         { id : "url_o", alias : "URL original", dataType : tableau.dataTypeEnum.string },
         { id : "height_o", alias : "URL original height", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         { id : "width_o", alias : "URL original width", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
+        { id : "ispublic", alias : "is public", dataType : tableau.dataTypeEnum.bool },
+        { id : "isfriend", alias : "is friend", dataType : tableau.dataTypeEnum.bool },
+        { id : "isfamily", alias : "is family", dataType : tableau.dataTypeEnum.bool },
         ];
 
         var tags = [
