@@ -191,6 +191,9 @@
             url: "oauthurl",
             type: "GET",
             dataType: 'text',
+            data: {
+                port: location.port,
+            },
             async: false,
             success: function (data) {
                 oauthUrl = data;

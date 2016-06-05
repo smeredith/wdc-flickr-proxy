@@ -1,3 +1,4 @@
 node_modules/
 config-private.bat
 config-heroku-private.ps1
+config-heroku-private.sh

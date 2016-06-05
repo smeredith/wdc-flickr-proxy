@@ -12,8 +12,11 @@ Some environment variables are required.
 
 ### Required Environment Variables
 
-`FLICKR_WDC_HOSTPATH` the base URL of your proxy service.
+`FLICKR_WDC_HOSTPATH` the base URL (just the protocol and hostname) of your proxy service.
 For example, `https://wdc-flickr-proxy.herokuapp.com`.
+
+`PORT` the port the above server is listening on.
+For Heroku, you don't need to set this as it will be defined by the system.
 
 `FLICKR_WDC_API_KEY` the API key you get from Flickr.
 

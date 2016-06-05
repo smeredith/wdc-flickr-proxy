@@ -16,13 +16,13 @@ app.use(express.static(__dirname + '/public'));
 // Number of records to get with each request to Flickr.
 var pageSize = process.env.FLICKR_WDC_PAGESIZE || "100";
 
-// Limit on the number of pages to request. Usefull for debugging.
+// Limit on the number of pages to request. Useful for debugging.
+// If not defined, all data will be retrieved.
 var pageLimit = process.env.FLICKR_WDC_PAGELIMIT;
 
 var clientId = process.env.FLICKR_WDC_API_KEY;
 var clientSecret = process.env.FLICKR_WDC_API_SECRET;
-var redirectURL = process.env.FLICKR_WDC_HOSTPATH + "/flickr.html";
-var wdcURL = "public/flickr.html";
+var wdcPage = "flickr.html";
 var flickrRestURL = "https://api.flickr.com/services/rest/";
 
 app.get('/accesstoken', function(req, res) {
@@ -88,11 +88,18 @@ app.get('/oauthurl', function(req, res) {
         signature_method: 'HMAC-SHA1'
     });
 
+    var oauthCallbackUrl = process.env.FLICKR_WDC_HOSTPATH;
+    if (req.query.port) {
+        oauthCallbackUrl += ":" + req.query.port;
+    }
+    oauthCallbackUrl += "/" + wdcPage;
+    console.log("oauthCallbackUrl: " + oauthCallbackUrl);
+
     var reqData = {
         url: 'https://www.flickr.com/services/oauth/request_token',
         method: 'GET',
         data: {
-            oauth_callback: redirectURL
+            oauth_callback: oauthCallbackUrl,
         }
     };
 
@@ -132,7 +139,15 @@ app.get('/flickr_people_getphotos', function(req, res) {
         signature_method: 'HMAC-SHA1'
     });
 
-    var token = JSON.parse(req.query.token);
+    try {
+        var token = JSON.parse(req.query.token);
+    } catch(e) {
+        console.log(e.message);
+        console.log("req.query.token: " + req.query.token);
+        res.write('{"photos":{}, "stat":"ok"}');
+        res.end();
+        return;
+    }
 
     var reqData = {
         url: flickrRestURL,
@@ -178,8 +193,6 @@ app.get('/flickr_people_getphotos', function(req, res) {
 
 app.get('/istokenvalid', function(req, res) {
 
-    console.log("istokenvalid");
-
     var auth = oauth({
         consumer: {
             public: clientId,
@@ -218,9 +231,18 @@ app.get('/istokenvalid', function(req, res) {
 
     request(options, function (error, response, body) {
         if (!error) {
-            console.log(body);
-            resJson = JSON.parse(body);
-            res.write(resJson.stat);
+            try {
+                var resJson = JSON.parse(body);
+            } catch(e) {
+                console.log("istokenvalid failed");
+                console.log(e.message);
+                console.log("body: " + body);
+            }
+
+            if (resJson) {
+                console.log("logged-in user: " + resJson.user.username._content + " (" + resJson.user.id + ")");
+                res.write(resJson.stat);
+            }
             res.end();
         } else {
             console.log(error);
@@ -241,6 +263,10 @@ function envVarsAreSet() {
     }
     if (!process.env.FLICKR_WDC_HOSTPATH) {
         console.log("Environment variable FLICKR_WDC_HOSTPATH not set. This is the base URL of this wdc-flickr-proxy server.");
+        valid = false;
+    }
+    if (!process.env.PORT) {
+        console.log("Environment variable PORT not set. This is the port for the server to listen on.");
         valid = false;
     }
     return valid;
