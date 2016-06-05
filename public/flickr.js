@@ -86,24 +86,16 @@
                     for (i = 0; i < photos.length; ++i) {
                         var photo = photos[i];
 
-                        // Make one row per tag. If a photo has no tags or one tag, it
-                        // will get one row in the results. If a photo has multiple tags,
-                        // it will get multiple rows: one per tag. This is to
-                        // allow for easy tag analysis in Tableau.
+                        // Make one row per tag.
                         var tags = photo.tags.split(" ");
-                        var entriesToCreateThisPhoto = tags.length;
-                        if (entriesToCreateThisPhoto == 0) {
-                            entriesToCreateThisPhoto = 1;
-                        }
-
-                        for (e = 0; e < entriesToCreateThisPhoto; ++e) {
-                            var entry = {};
-                            entry.photoid = photo.id;
-                            if (e < tags.length) {
+                        for (e = 0; e < tags.length; ++e) {
+                            if (tags[e].length > 0) {
+                                var entry = {};
+                                entry.photoid = photo.id;
                                 entry.tag = tags[e];
-                            }
 
-                            tagList.push(entry);
+                                tagList.push(entry);
+                            }
                         }
                     }
                 }

@@ -35,8 +35,9 @@ If not specified, all the data is returned.
 Two tables are returned.
 
 The first table, `flickrmetadata`, contains one row per photo.
-It contains columns for photo metadata like title and description.
+It contains columns for photo metadata like title, description, date taken, etc.
 The second table, `flickrtags`, contains one row per tag.
 This table has two columns: `photo id` and `tag`.
 There may be multiple rows per photo if the photo contains more than one tag.
+If a photo has no tags, it won't appear in the table at all.
 Both tables contain the `photo id` field, which can be used to join them.
