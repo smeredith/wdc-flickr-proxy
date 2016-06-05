@@ -32,6 +32,11 @@ If not specified, all the data is returned.
 
 ## Data Returned
 
-This WDC is intended for tag analysis.
-As such, if there are multiple tags on a image, there will be multiple rows returned for image, each with a different value in the tag column and all other columns the same.
-So the number of rows returned will be more than the number of images.
+Two tables are returned.
+
+The first table, `flickrmetadata`, contains one row per photo.
+It contains columns for photo metadata like title and description.
+The second table, `flickrtags`, contains one row per tag.
+This table has two columns: `photo id` and `tag`.
+There may be multiple rows per photo if the photo contains more than one tag.
+Both tables contain the `photo id` field, which can be used to join them.
