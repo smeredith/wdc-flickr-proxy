@@ -13,20 +13,14 @@ app.set('port', process.env.PORT);
 app.use(cookieParser());
 app.use(express.static(__dirname + '/public'));
 
-// Number of records to get with each request to Flickr.
-var pageSize = process.env.FLICKR_WDC_PAGESIZE || "100";
-
-// Limit on the number of pages to request. Useful for debugging.
-// If not defined, all data will be retrieved.
-var pageLimit = process.env.FLICKR_WDC_PAGELIMIT;
-
 var clientId = process.env.FLICKR_WDC_API_KEY;
 var clientSecret = process.env.FLICKR_WDC_API_SECRET;
 var wdcPage = "flickr.html";
 var flickrRestURL = "https://api.flickr.com/services/rest/";
 
+// Exchange a request token for an access token.
 app.get('/accesstoken', function(req, res) {
-    console.log("in /accesstoken: " + req.url);
+    console.log("/accesstoken: " + req.url);
 
     var oauth_token = req.query.oauth_token;
     var oauth_verifier = req.query.oauth_verifier;
@@ -78,7 +72,7 @@ app.get('/accesstoken', function(req, res) {
 // token, so this function gets that first.
 app.get('/oauthurl', function(req, res) {
 
-    console.log("in /oauthurl");
+    console.log("/oauthurl");
 
     var auth = oauth({
         consumer: {
@@ -127,9 +121,9 @@ app.get('/oauthurl', function(req, res) {
     });
 });
 
-app.get('/flickr_people_getphotos', function(req, res) {
+app.get('/forward', function(req, res) {
 
-    console.log("flickr_people_getphotos");
+    console.log("/forward " + req.query.passThroughParams.method);
 
     var auth = oauth({
         consumer: {
@@ -142,84 +136,20 @@ app.get('/flickr_people_getphotos', function(req, res) {
     try {
         var token = JSON.parse(req.query.token);
     } catch(e) {
-        console.log(e.message);
-        console.log("req.query.token: " + req.query.token);
-        res.write('{"photos":{}, "stat":"ok"}');
+        console.log("error in forward " + req.query.passThroughParams.method + " " + e.message);
         res.end();
         return;
     }
 
-    var reqData = {
-        url: flickrRestURL,
-        method: 'GET',
-        data: {
-            method: "flickr.people.getPhotos",
-            api_key: clientId,
-            user_id: req.query.user_id,
-            extras: req.query.extras,
-            per_page: pageSize,
-            page: req.query.page,
-            format: "json",
-            nojsoncallback: "1",
-        }
-    };
-
-    var options = {
-        url: reqData.url,
-        method: reqData.method,
-        qs: reqData.data,
-        headers: auth.toHeader(auth.authorize(reqData, token))
-    };
-
-    if (pageLimit && (parseInt(req.query.page) > parseInt(pageLimit))) {
-        console.log("Page limit reached. Stopping.");
-        res.write('{"photos":{}, "stat":"ok"}');
-        res.end();
-    } else {
-
-        console.log("Getting page " + req.query.page + " for user_id: " + options.qs.user_id);
-
-        request(options, function (error, response, body) {
-            if (!error) {
-                console.log("got flickr.people.getPhotos response");
-                res.write(body);
-                res.end();
-            } else {
-                console.log(error);
-            }
-        });
-    }
-});
-
-app.get('/istokenvalid', function(req, res) {
-
-    var auth = oauth({
-        consumer: {
-            public: clientId,
-            secret: clientSecret
-        },
-        signature_method: 'HMAC-SHA1'
-    });
-
-    var token = JSON.parse(req.query.token);
-
-    if (!token.public || token.public.length == 0) {
-        res.end();
-    }
-
-    if (!token.secret || token.secret.length == 0) {
-        res.end();
-    }
+    var apiParams = Object.assign({}, req.query.passThroughParams);
+    apiParams.api_key = clientId;
+    apiParams.format = "json";
+    apiParams.nojsoncallback = "1";
 
     var reqData = {
         url: flickrRestURL,
         method: 'GET',
-        data: {
-            method: "flickr.test.login",
-            api_key: clientId,
-            format: "json",
-            nojsoncallback: "1",
-        }
+        data: apiParams,
     };
 
     var options = {
@@ -231,22 +161,13 @@ app.get('/istokenvalid', function(req, res) {
 
     request(options, function (error, response, body) {
         if (!error) {
-            try {
-                var resJson = JSON.parse(body);
-            } catch(e) {
-                console.log("istokenvalid failed");
-                console.log(e.message);
-                console.log("body: " + body);
-            }
-
-            if (resJson) {
-                console.log("logged-in user: " + resJson.user.username._content + " (" + resJson.user.id + ")");
-                res.write(resJson.stat);
-            }
-            res.end();
+            res.write(body);
         } else {
+            res.write("{}");
             console.log(error);
+            console.log(body);
         }
+        res.end();
     });
 });
 

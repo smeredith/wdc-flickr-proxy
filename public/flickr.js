@@ -1,5 +1,7 @@
 (function () {
 
+    var perPage = 500;  // Tunable number of records to return per request.
+
     // Get a set of image metadata from the server via the WDC proxy.
     function getImageMetadata(lastPage) {
         var metadataList = [];
@@ -13,18 +15,23 @@
         // We can't sign the request on the client because it requires the token
         // plus an API secret, which must not be made available to the client.
         var xhr = $.ajax({
-            url: "flickr_people_getphotos",
+            url: "forward",
             type: "GET",
-            data: {
-                page: page.toString(),
-                user_id: tableau.username,
-                token: tableau.password,
-                extras: "description,date_taken,geo,views,url_o", //,license,date_upload,original_format,icon_server,last_update,media,path_alias,url_sq,url_t,url_s,url_q,url_m,url_n,url_z,url_c,url_l",
-            },
             dataType: 'json',
             async: false,
+            data: {
+                token: tableau.password,
+                passThroughParams: {
+                    method: "flickr.people.getphotos",
+                    extras: "description,date_taken,geo,views,url_o",
+                    user_id: tableau.username,
+                    page: page,
+                    per_page: perPage,
+                    // privacy_filter: 1,    // for debugging, to limit the  number of results
+                }
+            },
             success: function (data) {
-
+                tableau.log("got page " + data.photos.page + " of " + data.photos.pages);
                 if (data.photos && data.photos.page <= data.photos.pages) {
                     var photos = data.photos.photo;
                     for (i = 0; i < photos.length; ++i) {
@@ -72,18 +79,23 @@
         // We can't sign the request on the client because it requires the token
         // plus an API secret, which must not be made available to the client.
         var xhr = $.ajax({
-            url: "flickr_people_getphotos",
+            url: "forward",
             type: "GET",
-            data: {
-                page: page.toString(),
-                user_id: tableau.username,
-                token: tableau.password,
-                extras: "tags",
-            },
             dataType: 'json',
             async: false,
+            data: {
+                token: tableau.password,
+                passThroughParams: {
+                    method: "flickr.people.getphotos",
+                    extras: "tags",
+                    user_id: tableau.username,
+                    page: page,
+                    per_page: perPage,
+                    // privacy_filter: 1,    // for debugging, to limit the  number of results
+                }
+            },
             success: function (data) {
-
+                tableau.log("got page " + data.photos.page + " of " + data.photos.pages);
                 if (data.photos && data.photos.page <= data.photos.pages) {
                     var photos = data.photos.photo;
                     for (i = 0; i < photos.length; ++i) {
@@ -157,7 +169,7 @@
 
     myConnector.getData = function (table, doneCallback) {
 
-        if (tableau.password.length == 0 || !isTokenValid()) {
+        if (tableau.password.length == 0 || !isLoggedIn()) {
             tableau.abortForAuth();
         }
 
@@ -243,21 +255,22 @@
         return accessToken;
     }
 
-    function isTokenValid() {
+    function isLoggedIn() {
         var valid = false;
 
-        tableau.log("isTokenValid()");
-
         var xhr = $.ajax({
-            url: "istokenvalid",
+            url: "forward",
             type: "GET",
-            dataType: 'text',
+            dataType: 'json',
             async: false,
             data: {
                 token: tableau.password,
+                passThroughParams: {
+                    method: "flickr.test.login",
+                }
             },
             success: function (data) {
-                valid = (data == "ok");
+                valid = data.stat == "ok";
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 tableau.log(xhr.responseText + "\n" + thrownError);
@@ -265,6 +278,7 @@
             }
         });
 
+        tableau.log("isLoggedIn() returning " + valid);
         return valid;
     }
 
@@ -279,7 +293,7 @@
 
             // If we don't have a valid token stored in password, we need to
             // re-authenticate.
-            if (tableau.password.length == 0 || !isTokenValid()) {
+            if (tableau.password.length == 0 || !isLoggedIn()) {
                 tableau.log("gatherDataPhase abortForAuth()");
                 tableau.abortForAuth();
             }
