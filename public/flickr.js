@@ -23,7 +23,7 @@
                 token: tableau.password,
                 passThroughParams: {
                     method: "flickr.people.getphotos",
-                    extras: "description,date_taken,geo,views,url_o",
+                    extras: "description,date_taken,geo,views,url_o,url_q",
                     user_id: tableau.username,
                     page: page,
                     per_page: perPage,
@@ -49,6 +49,9 @@
                         entry.url_o = photo.url_o;
                         entry.height_o = photo.height_o;
                         entry.width_o = photo.width_o;
+                        entry.url_q = photo.url_q;
+                        entry.height_q = photo.height_q;
+                        entry.width_q = photo.width_q;
                         entry.ispublic = photo.ispublic == 1;
                         entry.isfriend = photo.isfriend == 1;
                         entry.isfamily = photo.isfamily == 1;
@@ -142,6 +145,9 @@
         { id : "url_o", alias : "URL original", dataType : tableau.dataTypeEnum.string },
         { id : "height_o", alias : "URL original height", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         { id : "width_o", alias : "URL original width", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
+        { id : "url_q", alias : "URL square", dataType : tableau.dataTypeEnum.string },
+        { id : "height_q", alias : "URL square height", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
+        { id : "width_q", alias : "URL square width", dataType : tableau.dataTypeEnum.int, columnRole : tableau.columnRoleEnum.dimension },
         { id : "ispublic", alias : "is public", dataType : tableau.dataTypeEnum.bool },
         { id : "isfriend", alias : "is friend", dataType : tableau.dataTypeEnum.bool },
         { id : "isfamily", alias : "is family", dataType : tableau.dataTypeEnum.bool },
