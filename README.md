@@ -1,4 +1,4 @@
-# wdc-flickr-proxy
+# Tableau Web Data Connector for Flickr
 
 This is a Tableau Web Data Connector for Flickr.
 A [Web Data Connector](https://www.tableau.com/web-data-connector) is a component that is used to give [Tableau](https://www.tableau.com) access to data on the web that is exposed via an API.
@@ -8,7 +8,7 @@ It requires that you log in with your Flickr credentials.
 
 ## What You Can Do With It
 
-You can analyze your metadata in a number of ways using Tableau.
+You can analyze your photo metadata in a number of ways using Tableau.
 Here are a few simple examples:
 
 You can see which day of the week is your most photographed day.
@@ -27,7 +27,7 @@ You can create a map with a dot for each photo and display a photo when you roll
 
 ![map](images/map.png)
 
-## Usage
+## How to Use It
 
 To use the Web Data Connector, create a new Web Data Connector data source in Tableau and enter `https://wdc-flickr-proxy.herokuapp.com`.
 You will be directed to Flickr's sign-in page where you will be asked to log in and give the Web Data Connector read-only access to your photos.
@@ -47,7 +47,7 @@ There may be multiple rows per photo if the photo contains more than one tag.
 If a photo has no tags, it won't appear in the table at all.
 Both tables contain the `photo id` field, which can be used to join them.
 
-## Technical Details
+## Source Code Technical Details
 
 This repo contains the source for the Web Data Connector.
 It is set up to work as a nodejs app.
