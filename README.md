@@ -29,7 +29,7 @@ You can create a map with a dot for each photo and display a photo when you roll
 
 ## How to Use It
 
-To use the Web Data Connector, create a new Web Data Connector data source in Tableau and enter `https://wdc-flickr-proxy.herokuapp.com`.
+To use the Web Data Connector, create a new Web Data Connector data source in Tableau and enter `https://wdc-flickr-proxy.herokuapp.com/flickr.html`.
 You will be directed to Flickr's sign-in page where you will be asked to log in and give the Web Data Connector read-only access to your photos.
 Once you have logged in, Tableau will immediately pull in the metadata for your photo collection.
 This may take a while depending on the size of your collection.
