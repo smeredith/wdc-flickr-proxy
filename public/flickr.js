@@ -1,6 +1,7 @@
 (function () {
 
     var perPage = 500;  // Tunable number of records to return per request.
+    var username = "";
 
     // Get a set of image metadata from the server via the WDC proxy.
     function getImageMetadata(lastPage) {
@@ -55,6 +56,7 @@
                         entry.ispublic = photo.ispublic == 1;
                         entry.isfriend = photo.isfriend == 1;
                         entry.isfamily = photo.isfamily == 1;
+                        entry.username = username;
 
                         metadataList.push(entry);
                     }
@@ -151,6 +153,7 @@
         { id : "ispublic", alias : "is public", dataType : tableau.dataTypeEnum.bool },
         { id : "isfriend", alias : "is friend", dataType : tableau.dataTypeEnum.bool },
         { id : "isfamily", alias : "is family", dataType : tableau.dataTypeEnum.bool },
+        { id : "username", alias : "username", dataType : tableau.dataTypeEnum.string },
         ];
 
         var tags = [
@@ -276,6 +279,7 @@
                 }
             },
             success: function (data) {
+                username = data.user.username._content;
                 valid = data.stat == "ok";
             },
             error: function (xhr, ajaxOptions, thrownError) {
