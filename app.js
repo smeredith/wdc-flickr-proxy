@@ -54,7 +54,7 @@ app.get('/accesstoken', function(req, res) {
 
     request(options, function (error, response, body) {
         if (!error) {
-            console.log("got access token: " + body);
+            console.log("got access token");
 
             // Done with this cookie. The client js uses it as a clue for when
             // to exchange the request token for an access token. We did that,
