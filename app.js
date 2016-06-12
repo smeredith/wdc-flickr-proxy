@@ -15,7 +15,6 @@ app.use(express.static(__dirname + '/public'));
 
 var clientId = process.env.FLICKR_WDC_API_KEY;
 var clientSecret = process.env.FLICKR_WDC_API_SECRET;
-var wdcPage = "flickr.html";
 var flickrRestURL = "https://api.flickr.com/services/rest/";
 
 // Exchange a request token for an access token.
@@ -61,10 +60,10 @@ app.get('/accesstoken', function(req, res) {
             // so clear the cookie.
             res.clearCookie("oauth_token_secret");
             res.write(body);
-            res.end();
         } else {
             console.log(error);
         }
+        res.end();
     });
  });
 
@@ -86,7 +85,7 @@ app.get('/oauthurl', function(req, res) {
     if (req.query.port) {
         oauthCallbackUrl += ":" + req.query.port;
     }
-    oauthCallbackUrl += "/" + wdcPage;
+    oauthCallbackUrl += "/flickr.html";
     console.log("oauthCallbackUrl: " + oauthCallbackUrl);
 
     var reqData = {
@@ -114,13 +113,15 @@ app.get('/oauthurl', function(req, res) {
 
             var authUrl = 'https://www.flickr.com/services/oauth/authorize?perms=read&oauth_token=' + params.oauth_token;
             res.write(authUrl);
-            res.end();
         } else {
             console.log(error);
         }
+        res.end();
     });
 });
 
+// Call any arbitrary Flickr API function. Use the passThroughParams to pass
+// params to Flickr.
 app.get('/forward', function(req, res) {
 
     console.log("/forward " + req.query.passThroughParams.method);
