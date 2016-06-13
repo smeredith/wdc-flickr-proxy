@@ -16,6 +16,7 @@ You can see which day of the week is your most photographed day.
 ![day of week graph](images/day-of-week.png)
 
 You can create a tag cloud of all your tags.
+Clicking a tag opens the browser to Flickr with search results from your collection for that tag.
 
 ![tag cloud](images/tag-cloud.png)
 
@@ -68,3 +69,39 @@ That will work for Windows, but not for Mac.
 
 `FLICKR_WDC_API_SECRET` the API secret you get from Flickr.
 
+See [this link](https://www.flickr.com/services/api/misc.api_keys.html) for how to get these keys from Flickr.
+Note that these are only required if you want to run your own server.
+You can use the Web Data Connector with normal Flickr login credentials.
+
+### Why a Server is Required
+
+There are two reasons why a server component is necessary for this WDC: single origin policy and security of the developer API key and secret.
+
+#### Single Origin Policy
+
+The web browser control embedded in Tableau enforces the "Single Origin Policy."
+This is a security measure that ensures that AJAX requests can only be made to the domain where the running Javascript came from.
+For example, if a Web Data Connector was downloaded from example.com, it cannot make AJAX requests to flickr.com.
+Well technically, it can make the request, but the response will be blocked by the browser control.
+
+There are generally two solutions to this problem, and they both require server cooperation.
+(And Flickr does not cooperate.)
+First, the server could use JSONP.
+Flickr supports JSONP for all it's normal API calls, but not for OAUTH.
+Second, the server could set a header to allow this to work: `Access-Control-Allow-Origin`.
+Flickr does not support this either.
+It is possible to stand up a single-purpose CORS proxy for this.
+It's sole functionality is to add the `Access-Control-Allow-Origin` header to all responses coming from Flickr.
+
+For more information on this topic, see [this Tableau documentation](https://onlinehelp.tableau.com/current/api/wdc/en-us/WDC/wdc_cors.htm).
+
+#### Securing the Developer API Key and Secret
+
+The Flickr API requires that all authenticated API calls be signed with both the OAUTH access token and the Flickr developer API key and API secret.
+If this signing were done in the client Javascript, it would be trivial for anyone to capture the API key and secret.
+By forwarding the Flickr API calls to the server component of the WDC to do the signing, the API key and secret remain safe as they are never transferred to the client.
+
+### Authentication with Flickr
+
+The most complex part of the WDC is working with Flickr OAUTH authentication.
+For details on how that works, see [this link](https://www.flickr.com/services/api/auth.oauth.html).
