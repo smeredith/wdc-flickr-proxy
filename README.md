@@ -73,7 +73,16 @@ See [this link](https://www.flickr.com/services/api/misc.api_keys.html) for how 
 Note that these are only required if you want to run your own server.
 You can use the Web Data Connector with normal Flickr login credentials.
 
-### Why a Server is Required
+### Why no Exif Data?
+
+The data returned by the WDC is the most of the basic metadata that Flickr returns in `flickr.people.getphotos`.
+This API method returns information for 500 photos at a time in a single HTTP request.
+It does not include Exif data.
+If you want that, you need to make one additional request per photo.
+That is certainly possible to do in the WDC, but it would take quite a big longer to complete the operation there would be 500 times as many HTTP requests required.
+If I wanted that level of detail, I would probably write a separate script to extract the data to a text file or database, then use that as the input to Tableau.
+
+### Why a Server is Required?
 
 There are two reasons why a server component is necessary for this WDC: same origin policy and security of the developer API key and secret.
 
@@ -87,7 +96,7 @@ Well technically, it can make the request, but the response will be blocked by t
 There are generally two solutions to this problem, and they both require server cooperation.
 (And Flickr does not cooperate.)
 First, the server could use JSONP.
-Flickr supports JSONP for all it's normal API calls, but not for OAUTH.
+Flickr supports JSONP for all it's normal API calls, but not for OAuth.
 Second, the server could set a header to allow this to work: `Access-Control-Allow-Origin`.
 Flickr does not support this either.
 It is possible to stand up a single-purpose CORS proxy for this.
@@ -95,13 +104,22 @@ It's sole functionality is to add the `Access-Control-Allow-Origin` header to al
 
 For more information on this topic, see [this Tableau documentation](https://onlinehelp.tableau.com/current/api/wdc/en-us/WDC/wdc_cors.htm).
 
-#### Securing the Developer API Key and Secret
+#### Securing the Flickr Developer API Key and Secret
 
-The Flickr API requires that all authenticated API calls be signed with both the OAUTH access token and the Flickr developer API key and API secret.
+The Flickr API requires that all authenticated API calls be signed with both the OAuth access token and the Flickr developer API key and API secret.
 If this signing were done in the client Javascript, it would be trivial for anyone to capture the API key and secret.
 By forwarding the Flickr API calls to the server component of the WDC to do the signing, the API key and secret remain safe as they are never transferred to the client.
 
 ### Authentication with Flickr
 
-The most complex part of the WDC is working with Flickr OAUTH authentication.
+The most complex part of the WDC is working with Flickr OAuth authentication.
 For details on how that works, see [this link](https://www.flickr.com/services/api/auth.oauth.html).
+
+#### Cookies
+
+There is one place where a cookie is required.
+In the Oauth flow, an "OAuth token secret" comes with the request token and is needed to complete the exchange of the request token for the access token.
+While the request token is passed to the Flickr sign-in URL and come back as part of the redirect back to the WDC, the token secret is not.
+The cookie is used to store this for the duration of the Flickr sign-in UI so that it can be used later.
+It is used by the client js as a trigger to indicate that it is being called back after the sign-in UI.
+It is deleted as soon as it's not needed any more.
