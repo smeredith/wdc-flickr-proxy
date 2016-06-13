@@ -75,11 +75,11 @@ You can use the Web Data Connector with normal Flickr login credentials.
 
 ### Why a Server is Required
 
-There are two reasons why a server component is necessary for this WDC: single origin policy and security of the developer API key and secret.
+There are two reasons why a server component is necessary for this WDC: same origin policy and security of the developer API key and secret.
 
-#### Single Origin Policy
+#### Same Origin Policy
 
-The web browser control embedded in Tableau enforces the "Single Origin Policy."
+The web browser control embedded in Tableau enforces the "Same Origin Policy."
 This is a security measure that ensures that AJAX requests can only be made to the domain where the running Javascript came from.
 For example, if a Web Data Connector was downloaded from example.com, it cannot make AJAX requests to flickr.com.
 Well technically, it can make the request, but the response will be blocked by the browser control.
