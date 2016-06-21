@@ -28,25 +28,33 @@ You can create a map with a dot for each photo and display a photo when you roll
 
 ![map](images/map.png)
 
+You can see how many of your photos are landscape vs. portrait.
+
+![orientation](images/orientation.png)
+
 ## How to Use It
 
 To use the Web Data Connector, create a new Web Data Connector data source in Tableau and enter `https://wdc-flickr-proxy.herokuapp.com/flickr.html`.
 You will be directed to Flickr's sign-in page where you will be asked to log in and give the Web Data Connector read-only access to your photos.
-Once you have logged in, Tableau will immediately pull in the metadata for your photo collection.
-This may take a while depending on the size of your collection.
-Tableau doesn't give you any indication of time remaining--you only see a spinner to show that something is happening.
+Once you have logged in, Tableau will let you drag one or two tables into the Data Source pane.
 
-### Data Returned
+### Tables
 
 Two tables are returned.
 
 The first table, `flickrmetadata`, contains one row per photo.
 It contains columns for photo metadata like title, description, date taken, etc.
+
 The second table, `flickrtags`, contains one row per tag.
 This table has two columns: `photo id` and `tag`.
 There may be multiple rows per photo if the photo contains more than one tag.
 If a photo has no tags, it won't appear in the table at all.
+
 Both tables contain the `photo id` field, which can be used to join them.
+If you do a Left join, you will get at least one row per image.
+If there are multiple tags assigned to an image, there will be one row per tag for that image.
+
+![join](images/join.png)
 
 ## Source Code Technical Details
 
